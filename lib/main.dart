@@ -4,6 +4,12 @@ void main() {
   runApp(const MyApp());
 }
 
+// --------- DARK NAVY COLORS ----------
+const Color navyDark = Color(0xFF0A192F);
+const Color navy = Color(0xFF112240);
+const Color navyLight = Color(0xFF1F3A5F);
+const Color cardDark = Color(0xFF233554);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -13,13 +19,22 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: "Screen Time Tracker",
       theme: ThemeData(
-        primaryColor: Colors.blueAccent,
-        scaffoldBackgroundColor: Colors.grey[100],
         useMaterial3: true,
+        scaffoldBackgroundColor: navyDark,
       ),
       home: const ScreenTimeApp(),
     );
   }
+}
+
+BoxDecoration navyGradient() {
+  return const BoxDecoration(
+    gradient: LinearGradient(
+      colors: [navyDark, navy],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ),
+  );
 }
 
 class ScreenTimeApp extends StatefulWidget {
@@ -35,21 +50,12 @@ class _ScreenTimeAppState extends State<ScreenTimeApp> {
   String username = "User";
   int dailyGoal = 5;
   int todayTime = 0;
-  List<int> sessions = []; // Each session is in hours
+  List<int> sessions = [];
 
   final TextEditingController timeController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController goalController = TextEditingController();
 
-  @override
-  void dispose() {
-    timeController.dispose();
-    usernameController.dispose();
-    goalController.dispose();
-    super.dispose();
-  }
-
-  // Add a screen time session
   void addScreenTime() {
     int? hours = int.tryParse(timeController.text);
     if (hours == null || hours <= 0) return;
@@ -61,92 +67,146 @@ class _ScreenTimeAppState extends State<ScreenTimeApp> {
     });
   }
 
-  // Advice text
-  String getAdvice() {
-    if (todayTime < 2) return "🌟 Excellent! Low screen time.";
-    if (todayTime <= dailyGoal) return "🙂 Moderate usage. Keep going!";
-    return "⚠️ High screen time! Try to reduce.";
+  void removeSession(int index) {
+    setState(() {
+      todayTime -= sessions[index];
+      sessions.removeAt(index);
+    });
   }
 
-  // ------------------- DASHBOARD -------------------
+  void resetAll() {
+    setState(() {
+      sessions.clear();
+      todayTime = 0;
+    });
+  }
+
+  String getAdvice() {
+    if (todayTime < 2) return "Excellent! Low screen time.";
+    if (todayTime <= dailyGoal) return "Moderate usage. Keep going!";
+    return "High screen time! Try to reduce.";
+  }
+
+  // ---------------- DASHBOARD ----------------
   Widget dashboardScreen() {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
+    return Container(
+      decoration: navyGradient(),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Icon(Icons.smartphone, size: 100, color: Colors.blueAccent),
-              const SizedBox(height: 20),
+              const Icon(Icons.smartphone, size: 80, color: Colors.white70),
+              const SizedBox(height: 10),
               Text(
-                "Hello, $username!",
+                "Hello, $username 👋",
                 style: const TextStyle(
-                    fontSize: 28, fontWeight: FontWeight.bold),
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
-              const SizedBox(height: 20),
-              Card(
-                elevation: 6,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      const Text(
-                        "Add today's screen time",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 10),
-                      TextField(
-                        controller: timeController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          hintText: "Hours",
-                          prefixIcon: const Icon(Icons.timer),
+              const SizedBox(height: 30),
+
+              // -------- INPUT CARD --------
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: cardDark,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Add Screen Time",
+                      style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: timeController,
+                      style: const TextStyle(color: Colors.white),
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: "Enter hours",
+                        hintStyle:
+                        const TextStyle(color: Colors.white38),
+                        filled: true,
+                        fillColor: navyLight,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-                      const SizedBox(height: 15),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.add),
-                          label: const Text("Add Time", style: TextStyle(fontSize: 18)),
-                          style: ElevatedButton.styleFrom(
+                    ),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12))),
-                          onPressed: addScreenTime,
+                                  borderRadius:
+                                  BorderRadius.circular(15)),
+                            ),
+                            onPressed: addScreenTime,
+                            child: const Text("Add Time"),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        "Total today: $todayTime / $dailyGoal hours",
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 10),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: LinearProgressIndicator(
-                          value: todayTime / dailyGoal > 1 ? 1 : todayTime / dailyGoal,
-                          minHeight: 12,
-                          color: todayTime <= dailyGoal ? Colors.green : Colors.red,
-                          backgroundColor: Colors.grey[300],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                  BorderRadius.circular(15)),
+                            ),
+                            onPressed: () => timeController.clear(),
+                            child: const Text("Clear"),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        getAdvice(),
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.w600),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // -------- PROGRESS CARD --------
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: cardDark,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      "Today's Usage: $todayTime / $dailyGoal hrs",
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 18),
+                    ),
+                    const SizedBox(height: 15),
+                    LinearProgressIndicator(
+                      value: todayTime / dailyGoal > 1
+                          ? 1
+                          : todayTime / dailyGoal,
+                      minHeight: 12,
+                      color: Colors.blueAccent,
+                      backgroundColor: navyLight,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      getAdvice(),
+                      style:
+                      const TextStyle(color: Colors.white70),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -156,145 +216,149 @@ class _ScreenTimeAppState extends State<ScreenTimeApp> {
     );
   }
 
-  // ------------------- HISTORY -------------------
+  // ---------------- HISTORY ----------------
   Widget historyScreen() {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Text(
-              "Today's Sessions",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: sessions.isEmpty
-                  ? Center(
-                child: Text(
-                  "No sessions added yet.",
-                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                ),
-              )
-                  : ListView.builder(
-                itemCount: sessions.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      leading: const Icon(Icons.timer, color: Colors.blueAccent),
-                      title: Text("Session ${index + 1}: ${sessions[index]} hours"),
-                      trailing: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: sessions[index] / dailyGoal > 1 ? 1 : sessions[index] / dailyGoal,
-                          minHeight: 8,
-                          color: sessions[index] <= dailyGoal
-                              ? Colors.green
-                              : Colors.red,
-                          backgroundColor: Colors.grey[300],
+    return Container(
+      decoration: navyGradient(),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              const Text(
+                "Sessions Today",
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: resetAll,
+                child: const Text("Reset All"),
+              ),
+              const SizedBox(height: 15),
+              Expanded(
+                child: sessions.isEmpty
+                    ? const Center(
+                  child: Text(
+                    "No sessions yet.",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                )
+                    : ListView.builder(
+                  itemCount: sessions.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      color: cardDark,
+                      child: ListTile(
+                        leading: const Icon(Icons.timer,
+                            color: Colors.white),
+                        title: Text(
+                          "Session ${index + 1}: ${sessions[index]} hrs",
+                          style: const TextStyle(
+                              color: Colors.white),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete,
+                              color: Colors.redAccent),
+                          onPressed: () =>
+                              removeSession(index),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ------------------- PROFILE -------------------
+  // ---------------- PROFILE ----------------
   Widget profileScreen() {
     usernameController.text = username;
     goalController.text = dailyGoal.toString();
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            const Icon(Icons.person, size: 100, color: Colors.blueAccent),
-            const SizedBox(height: 16),
-            TextField(
-              controller: usernameController,
-              decoration: InputDecoration(
-                labelText: "Username",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                prefixIcon: const Icon(Icons.person),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: goalController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Daily Screen Time Goal",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                prefixIcon: const Icon(Icons.timer),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.save),
-                label: const Text("Save Settings", style: TextStyle(fontSize: 18)),
-                style: ElevatedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return Container(
+      decoration: navyGradient(),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              const Icon(Icons.person,
+                  size: 80, color: Colors.white70),
+              const SizedBox(height: 20),
+              TextField(
+                controller: usernameController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Username",
+                  hintStyle:
+                  const TextStyle(color: Colors.white38),
+                  filled: true,
+                  fillColor: navyLight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                controller: goalController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Daily Goal (hrs)",
+                  hintStyle:
+                  const TextStyle(color: Colors.white38),
+                  filled: true,
+                  fillColor: navyLight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
                 onPressed: () {
                   setState(() {
                     username = usernameController.text;
-                    dailyGoal = int.tryParse(goalController.text) ?? dailyGoal;
+                    dailyGoal =
+                        int.tryParse(goalController.text) ??
+                            dailyGoal;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Profile updated!")));
+                      const SnackBar(
+                          content: Text("Profile updated!")));
                 },
+                child: const Text("Save"),
               ),
-            ),
-            const SizedBox(height: 15),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.restart_alt),
-                label: const Text("Reset Data", style: TextStyle(fontSize: 18)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () {
-                  setState(() {
-                    todayTime = 0;
-                    sessions.clear();
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("All data reset!")));
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ------------------- BUILD -------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: screens[_currentIndex],
+      body: [
+        dashboardScreen(),
+        historyScreen(),
+        profileScreen(),
+      ][_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.blueAccent,
-        unselectedItemColor: Colors.grey,
+        backgroundColor: navy,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white54,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
@@ -304,10 +368,4 @@ class _ScreenTimeAppState extends State<ScreenTimeApp> {
       ),
     );
   }
-
-  List<Widget> get screens => [
-    dashboardScreen(),
-    historyScreen(),
-    profileScreen(),
-  ];
 }
